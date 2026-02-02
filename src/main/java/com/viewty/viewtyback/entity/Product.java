@@ -5,6 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -47,6 +52,27 @@ public class Product extends BaseTimeEntity {
     private String deliveryFee;
     // 배송비(제주/도서산간)
     private String deliveryJejuFee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id",
+                foreignKey = @ForeignKey(
+                        name = "FK_PRODUCT_CATEGORY",
+                        foreignKeyDefinition = "FOREIGN KEY (category_id) REFERENCES product_category(id) ON DELETE CASCADE"))
+//    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ProductCategory categoryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_id",
+                foreignKey = @ForeignKey(
+                            name = "FK_PRODUCT_OPTION",
+                            foreignKeyDefinition = "FOREIGN KEY (option_id) REFERENCES product_options(id) ON DELETE CASCADE"))
+//    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ProductOption optionId;
+
+    @Column(name = "prod_ingredients")
+    private String prodIngredients;
+//    @OneToMany(mappedBy = "product")
+//    private final List<ProductIngredient> ingredients = new ArrayList<>();
 
 
 //     전 성분(@Lob)
