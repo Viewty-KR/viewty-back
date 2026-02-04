@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "product_ingredient", indexes = {@Index(name = "idx_ingredient_name", columnList = "name")})
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
