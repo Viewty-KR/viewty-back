@@ -1,11 +1,17 @@
 package com.viewty.viewtyback.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "product_ingredient")
+@Table(name = "product_ingredient", indexes = {@Index(name = "idx_ingredient_name", columnList = "name")})
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductIngredient extends BaseTimeEntity {
 
     @Id
