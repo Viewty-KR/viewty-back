@@ -191,10 +191,10 @@ replay_pid*
 gradle-app.setting
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
+#!gradle-wrapper.jar
 
 # Avoid ignore Gradle wrappper properties
-!gradle-wrapper.properties
+#!gradle-wrapper.properties
 
 # Cache of project
 .gradletasknamecache
@@ -210,3 +210,7 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,java,gradle
+
+
+gradle/
+.env
