@@ -13,7 +13,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "products")
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product extends BaseTimeEntity {
 
     @Id
@@ -23,8 +26,9 @@ public class Product extends BaseTimeEntity {
     // 상품명
     private String name;
     // 상품 가격
-    private String price;
+    private long price;
     // 상품 이미지
+    @Column(length = 2048)
     private String imgUrl;
     // 용량/중량
     private String capacity;
@@ -58,7 +62,7 @@ public class Product extends BaseTimeEntity {
                 foreignKey = @ForeignKey(
                         name = "FK_PRODUCT_CATEGORY",
                         foreignKeyDefinition = "FOREIGN KEY (category_id) REFERENCES product_category(id) ON DELETE CASCADE"))
-//    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ProductCategory categoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -66,36 +70,12 @@ public class Product extends BaseTimeEntity {
                 foreignKey = @ForeignKey(
                             name = "FK_PRODUCT_OPTION",
                             foreignKeyDefinition = "FOREIGN KEY (option_id) REFERENCES product_options(id) ON DELETE CASCADE"))
-//    @OnDelete(action = OnDeleteAction.CASCADE)
     private ProductOption optionId;
 
-    @Column(name = "prod_ingredients")
+    @Column(name = "prod_ingredients", columnDefinition = "TEXT")
     private String prodIngredients;
-//    @OneToMany(mappedBy = "product")
-//    private final List<ProductIngredient> ingredients = new ArrayList<>();
 
-
-//     전 성분(@Lob)
-//    @Lob
-//    @Column(columnDefinition = "TEXT")
-//    private String ingredients;
-
-    @Builder
-    public Product(String name, String price, String imgUrl, String capacity, String specifications, String expiryDate, String usageMethod, String manufacturer, String country, String isFunctional, String precautions, String qa, String csNumber, String deliveryFee, String deliveryJejuFee) {
-        this.name = name;
-        this.price = price;
-        this.imgUrl = imgUrl;
-        this.capacity = capacity;
-        this.specifications = specifications;
-        this.expiryDate = expiryDate;
-        this.usageMethod = usageMethod;
-        this.manufacturer = manufacturer;
-        this.country = country;
-        this.isFunctional = isFunctional;
-        this.precautions = precautions;
-        this.qa = qa;
-        this.csNumber = csNumber;
-        this.deliveryFee = deliveryFee;
-        this.deliveryJejuFee = deliveryJejuFee;
-    }
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<ProductIngredientMap> ingredientMaps = new ArrayList<>();
 }
