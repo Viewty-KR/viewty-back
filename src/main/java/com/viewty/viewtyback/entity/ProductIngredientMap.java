@@ -14,7 +14,6 @@ import org.hibernate.annotations.OnDeleteAction;
             @Index(name = "idx_pim_product_id", columnList = "product_id"),
             @Index(name = "idx_pim_ingredient_id", columnList = "ingredient_id")
         })
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
