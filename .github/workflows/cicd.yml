@@ -50,8 +50,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/gallery-back:latest
-            ${{ secrets.DOCKER_USERNAME }}/gallery-back:${{ github.sha }}
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APPLICATION_NAME }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APPLICATION_NAME }}:${{ github.sha }}
 
   deploy:
     needs: build
@@ -67,7 +67,7 @@ jobs:
           script: |
             cd ~/app
             
-            docker pull ${{ secrets.DOCKER_USERNAME }}/gallery-back:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APPLICATION_NAME }}:latest
             
             docker compose down
             docker compose up -d
