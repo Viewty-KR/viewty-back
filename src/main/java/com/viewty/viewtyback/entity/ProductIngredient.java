@@ -1,9 +1,11 @@
 package com.viewty.viewtyback.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @Table(name = "product_ingredient")
 @NoArgsConstructor
 public class ProductIngredient extends BaseTimeEntity {

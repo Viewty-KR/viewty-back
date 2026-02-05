@@ -1,12 +1,11 @@
 package com.viewty.viewtyback.controller;
 
+import com.viewty.viewtyback.dto.response.ApiResponse;
+import com.viewty.viewtyback.dto.response.ProductDetailResponse;
 import com.viewty.viewtyback.entity.Product;
 import com.viewty.viewtyback.service.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,5 +22,12 @@ public class ProductController {
     ) {
         return productService.findAll(name);
     }
+
+    //  상품 상세 조회 (성분 분석 포함)
+//    @GetMapping("/{id}")
+//    public ApiResponse<ProductDetailResponse> getProductDetail(@PathVariable Long id) {
+//        ProductDetailResponse response = productService.getProductDetail(id);
+//        return ApiResponse.success(response);
+//    }
 
 }
