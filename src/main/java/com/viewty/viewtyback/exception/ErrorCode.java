@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // Auth
-    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "이미 사용 중인 사용자명입니다"),
+    DUPLICATE_USERID(HttpStatus.CONFLICT, "이미 사용 중인 사용자입니다"),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다"),
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "사용자 또는 비밀번호가 올바르지 않습니다"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다"),

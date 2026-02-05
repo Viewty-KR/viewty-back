@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SignupRequest {
 
-    @NotBlank(message = "사용자는 필수입니다")
+    @NotBlank(message = "ID는 필수입니다")
     @Size(min = 3, max = 30, message = "사용자는 3~30자여야 합니다")
     private String userId;
 
@@ -23,4 +23,5 @@ public class SignupRequest {
     private String password;
 
     private String name;
+
 }
