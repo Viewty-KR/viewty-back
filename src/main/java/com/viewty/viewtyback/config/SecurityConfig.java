@@ -66,7 +66,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers("/assets/**", "/static/**", "/vite.svg", "/logo.png");
+                .requestMatchers("/assets/**", "/static/**", "/vite.svg", "/logo.png")
+                .requestMatchers("/", "/product/**");
     }
 
     @Bean
