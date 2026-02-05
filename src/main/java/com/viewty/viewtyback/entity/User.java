@@ -32,7 +32,13 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private UserRole role = UserRole.USER; // 역할 (일반 사용자, ADMIN)
 
-    private String profileImageUrl;
+    //== 설문 정보 필드 추가 ==//
+    private String concerns;
+    private String sensitivity;
+    private String skinType;
+    private String feelingAfterWash;
+    private String afternoonSkin;
+    private String poreSize;
 
     @Builder
     public User(String userId, String email, String password, String name) {
@@ -42,4 +48,18 @@ public class User extends BaseTimeEntity {
         this.name = name;
     }
 
+    // 비밀번호
+    public void updatePasswordSurvey(String password) {
+        this.password = password;
+    }
+
+    // 설문 정보
+    public void updateSurvey(String concerns, String sensitivity, String skinType, String feelingAfterWash, String afternoonSkin, String poreSize) {
+        this.concerns = concerns;
+        this.sensitivity = sensitivity;
+        this.skinType = skinType;
+        this.feelingAfterWash = feelingAfterWash;
+        this.afternoonSkin = afternoonSkin;
+        this.poreSize = poreSize;
+    }
 }
