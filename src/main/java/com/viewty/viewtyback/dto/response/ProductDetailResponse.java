@@ -12,7 +12,7 @@ import java.util.List;
 public class ProductDetailResponse {
     private Long id;
     private String name;
-    private String price;
+    private long price;
     private String manufacturer; // 제조사 (신뢰도 확인용 등으로 유지)
 
     // 분석된 성분 정보

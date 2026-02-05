@@ -15,7 +15,7 @@ public class ProductReviewResponse {
     private Long productId;
     private String productName;
     private String productImgUrl;
-    private String productPrice;
+    private long productPrice;
     private Long categoryId;
     private String categoryName;
     private String categoryCode;
