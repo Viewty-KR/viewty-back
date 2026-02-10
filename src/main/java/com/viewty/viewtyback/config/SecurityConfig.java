@@ -32,7 +32,9 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/logout", "/api/users/**").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/products/**").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
                                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/api-docs/**", "/v3/api-docs/**").permitAll()
                                 .requestMatchers("/error").permitAll()
                                 .requestMatchers("/h2-console/**").permitAll()
@@ -52,7 +54,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://viewty.duckdns.org:*"));
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://localhost:*",
+                "https://devso.koyeb.app",
+                "https://viewty.duckdns.org",
+                "https://viewty.duckdns.org:*"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
@@ -68,8 +76,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers("/assets/**", "/static/**", "/vite.svg", "/logo.png")
-                .requestMatchers("/", "/product/**");
+                .requestMatchers("/assets/**", "/static/**", "/vite.svg", "/logo.png");
     }
 
     @Bean
