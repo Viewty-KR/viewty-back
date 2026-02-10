@@ -1,6 +1,8 @@
 package com.viewty.viewtyback.repository;
 
 import com.viewty.viewtyback.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +13,7 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    List<Product> findByNameContaining(String name);
+    Page<Product> findByNameContaining(String name, Pageable pageable);
 
     @NativeQuery("""
             SELECT GROUP_CONCAT(pi.name ORDER BY pi.name SEPARATOR', ') AS ingredient_names
