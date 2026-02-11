@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.viewty.viewtyback.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import java.util.List;
 
 @RestController
@@ -36,9 +39,10 @@ public class BookMarkController {
 
     @GetMapping("/status")
     public ApiResponse<BookmarkResponse> getBookmarkStatus(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long productId
     ) {
+        Long userId = (userDetails == null) ? null : userDetails.getId();
         return ApiResponse.success(bookMarkService.getBookmarkStatus(userId, productId));
     }
 }
