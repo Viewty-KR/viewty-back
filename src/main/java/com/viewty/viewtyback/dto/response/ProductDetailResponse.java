@@ -2,6 +2,7 @@ package com.viewty.viewtyback.dto.response;
 
 import com.viewty.viewtyback.entity.Product;
 import com.viewty.viewtyback.entity.ProductIngredient;
+import com.viewty.viewtyback.entity.RestrictedIngredient;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,9 +23,24 @@ public class ProductDetailResponse {
     private List<IngredientAnalysisDto> ingredients;
     private int harmfulIngredientCount;
 
-    public static ProductDetailResponse of(Product product, List<IngredientAnalysisDto> analyzedIngredients) {
+    private String capacity;        // 용량
+    private String specifications;  // 주요 사양
+    private String expiryDate;      // 사용 기한
+    private String usageMethod;     // 사용 방법
+    private String country;         // 제조국
+    private String isFunctional;    // 기능성 여부
+    private String precautions;     // 주의사항
+    private String qa;              // 품질보증기준
+    private String csNumber;        // CS 전화번호
+    private String deliveryFee;     // 배송비
+    private String deliveryJejuFee; // 제주 도서산간 배송비
+    private String allIngredients; // 전 성분
+
+    public static ProductDetailResponse of(Product product, List<IngredientAnalysisDto> analyzedIngredients, String allIngredients) {
+        // [수정] 유해 성분 개수 카운팅 (법적 규제 + 주의 성분 모두 포함하거나, 기획에 따라 isHarmful만 셀 수도 있음)
+        // 여기서는 '주의가 필요한 모든 성분'을 카운트하도록 설정했습니다.
         int harmfulCount = (int) analyzedIngredients.stream()
-                .filter(IngredientAnalysisDto::isHarmful)
+                .filter(i -> i.isHarmful() || i.isCaution() || i.isAllergy())
                 .count();
 
         String safeImgUrl = product.getImgUrl();
@@ -34,43 +50,22 @@ public class ProductDetailResponse {
                 if (lastSlashIndex != -1) {
                     String path = safeImgUrl.substring(0, lastSlashIndex + 1);
                     String filename = safeImgUrl.substring(lastSlashIndex + 1);
-
-                    // [1단계] "1+1+1" 보호 작전!
-                    // 숫자와 숫자 사이의 '+'는 '잠시 다른 문자(<PLUS>)'로 바꿔둡니다.
-                    // 그래야 밑에서 디코딩할 때 공백으로 사라지지 않습니다.
                     String tempFilename = filename.replaceAll("(\\d)\\+(\\d)", "$1<PLUS>$2");
-
-                    // [2단계] 디코딩 (나머지 '+'는 공백으로 변환됨)
                     try {
                         tempFilename = URLDecoder.decode(tempFilename, StandardCharsets.UTF_8);
                     } catch (Exception e) {
-                        // 10% 등 에러 발생 시, 그냥 '+'를 공백으로 바꾸고 진행
                         tempFilename = tempFilename.replace("+", " ");
                     }
-
-                    // [3단계] 보호해뒀던 '+' 복구 (1<PLUS>1 -> 1+1)
-                    // 이제 "1+1"은 살아났고, "닥터자르트+토너"는 "닥터자르트 토너"가 되었습니다.
                     tempFilename = tempFilename.replace("<PLUS>", "+");
-
-                    // [4단계] 닥터자르트 괄호 오타 수정 ("( 면봉" -> "(면봉")
                     tempFilename = tempFilename.replace("( ", "(");
                     tempFilename = tempFilename.replace(" )", ")");
-
-                    // [5단계] 정규화 (한글 자모 합치기)
                     tempFilename = Normalizer.normalize(tempFilename, Normalizer.Form.NFC);
-
-                    // [6단계] 최종 인코딩 (S3가 알아듣는 주소로 변환)
                     String encodedFilename = URLEncoder.encode(tempFilename, StandardCharsets.UTF_8);
-
-                    // [7단계] 마무리 치환 (공백 -> %20, 괄호 -> %28 %29)
-                    // 여기서 '+'는 원래 공백이었던 애들이 변한 것이므로 %20으로 바꿉니다.
-                    // 진짜 '+'는 위에서 '%2B'로 인코딩되었으므로 안전합니다.
                     encodedFilename = encodedFilename.replace("+", "%20")
                             .replace("(", "%28")
                             .replace(")", "%29")
                             .replace("*", "%2A")
                             .replace("%7E", "~");
-
                     safeImgUrl = path + encodedFilename;
                 }
             }
@@ -86,6 +81,18 @@ public class ProductDetailResponse {
                 .manufacturer(product.getManufacturer())
                 .ingredients(analyzedIngredients)
                 .harmfulIngredientCount(harmfulCount)
+                .capacity(product.getCapacity())
+                .specifications(product.getSpecifications())
+                .expiryDate(product.getExpiryDate())
+                .usageMethod(product.getUsageMethod())
+                .country(product.getCountry())
+                .isFunctional(product.getIsFunctional())
+                .precautions(product.getPrecautions())
+                .qa(product.getQa())
+                .csNumber(product.getCsNumber())
+                .deliveryFee(product.getDeliveryFee())
+                .deliveryJejuFee(product.getDeliveryJejuFee())
+                .allIngredients(allIngredients)
                 .build();
     }
 
@@ -93,13 +100,29 @@ public class ProductDetailResponse {
     @Builder
     public static class IngredientAnalysisDto {
         private String name;
-        private String ewgGrade;
-        private boolean isHarmful;
-        private boolean isAllergyTrigger;
+        private boolean isHarmful; // 법적 규제 (식약처 금지/한도)
+        private boolean isCaution; // [추가] 20가지 주의 성분
+        private boolean isAllergy; // [추가] 알레르기 유발 성분
+        private String division;   // 사유 (예: "배합한도", "20가지 주의성분")
 
-        public static IngredientAnalysisDto from(ProductIngredient ingredient) {
+        public static IngredientAnalysisDto of(ProductIngredient ingredient, RestrictedIngredient restrictedInfo) {
+            boolean isRestricted = (restrictedInfo != null);
+            String division = isRestricted ? restrictedInfo.getDivision() : null;
+
+            // [핵심 로직] division 텍스트를 분석하여 플래그 설정
+            // DB의 division 컬럼에 "알레르기", "20가지", "주의" 등의 텍스트가 포함되어 있어야 함
+            boolean isAllergy = division != null && division.contains("알레르기");
+            boolean isCaution = division != null && (division.contains("20가지") || division.contains("주의"));
+
+            // 법적 규제(Harmful)는 "금지"나 "한도"라는 단어가 있을 때만 true (알레르기/단순주의 제외)
+            boolean isLegalHarmful = division != null && (division.contains("금지") || division.contains("한도"));
+
             return IngredientAnalysisDto.builder()
                     .name(ingredient.getName())
+                    .isHarmful(isLegalHarmful) // 법적 규제만 Harmful로 취급
+                    .isCaution(isCaution)      // 주의 성분 플래그
+                    .isAllergy(isAllergy)      // 알레르기 플래그
+                    .division(division)
                     .build();
         }
     }

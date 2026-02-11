@@ -21,7 +21,7 @@ public class Review extends BaseTimeEntity{
 
     private String name;
     @Column(nullable = false)
-    @Size(min = 10, max = 500, message = "리뷰 내용은 10자 이상 500자 이하로 작성해주세요.")
+    @Size(min = 3, max = 500, message = "리뷰 내용은 3자 이상 500자 이하로 작성해주세요.")
     private String content;
     private int rating;
 

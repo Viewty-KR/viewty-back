@@ -56,8 +56,11 @@ public class BookMarkService {
     }
 
     public BookmarkResponse getBookmarkStatus(Long userId, Long productId) {
-        validateUserExists(userId);
         validateProductExists(productId);
+        if (userId == null) {
+            return BookmarkResponse.fromStatus(false);
+        }
+        validateUserExists(userId);
         boolean exists = productBookMarkRepository.existsByUserIdAndProductId(userId, productId);
         return BookmarkResponse.fromStatus(exists);
     }
