@@ -2,6 +2,7 @@ package com.viewty.viewtyback.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.context.annotation.Primary;
 
 @Entity
 @Table(name = "product_ingredient", indexes = {@Index(name = "idx_ingredient_name", columnList = "name")})
@@ -29,6 +30,9 @@ public class ProductIngredient extends BaseTimeEntity {
 
     @Column
     private String synonym;
+
+    @Column
+    private String functional;
 
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(
