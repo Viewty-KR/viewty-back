@@ -1,6 +1,8 @@
 package com.viewty.viewtyback.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +10,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "restricted_ingredient")
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RestrictedIngredient {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)

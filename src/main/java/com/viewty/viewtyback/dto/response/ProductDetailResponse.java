@@ -1,5 +1,6 @@
 package com.viewty.viewtyback.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.viewty.viewtyback.entity.Product;
 import com.viewty.viewtyback.entity.ProductIngredient;
 import com.viewty.viewtyback.entity.RestrictedIngredient;
@@ -23,22 +24,21 @@ public class ProductDetailResponse {
     private List<IngredientAnalysisDto> ingredients;
     private int harmfulIngredientCount;
 
-    private String capacity;        // 용량
-    private String specifications;  // 주요 사양
-    private String expiryDate;      // 사용 기한
-    private String usageMethod;     // 사용 방법
-    private String country;         // 제조국
-    private String isFunctional;    // 기능성 여부
-    private String precautions;     // 주의사항
-    private String qa;              // 품질보증기준
-    private String csNumber;        // CS 전화번호
-    private String deliveryFee;     // 배송비
-    private String deliveryJejuFee; // 제주 도서산간 배송비
-    private String allIngredients; // 전 성분
+    private String capacity;
+    private String specifications;
+    private String expiryDate;
+    private String usageMethod;
+    private String country;
+    private String isFunctional;
+    private String precautions;
+    private String qa;
+    private String csNumber;
+    private String deliveryFee;
+    private String deliveryJejuFee;
+    private String allIngredients;
+    private List<ProductOptionDto> options; // [추가] 상품 옵션 목록
 
-    public static ProductDetailResponse of(Product product, List<IngredientAnalysisDto> analyzedIngredients, String allIngredients) {
-        // [수정] 유해 성분 개수 카운팅 (법적 규제 + 주의 성분 모두 포함하거나, 기획에 따라 isHarmful만 셀 수도 있음)
-        // 여기서는 '주의가 필요한 모든 성분'을 카운트하도록 설정했습니다.
+    public static ProductDetailResponse of(Product product, List<IngredientAnalysisDto> analyzedIngredients, String allIngredients, List<ProductOptionDto> options) {
         int harmfulCount = (int) analyzedIngredients.stream()
                 .filter(i -> i.isHarmful() || i.isCaution() || i.isAllergy())
                 .count();
@@ -93,36 +93,50 @@ public class ProductDetailResponse {
                 .deliveryFee(product.getDeliveryFee())
                 .deliveryJejuFee(product.getDeliveryJejuFee())
                 .allIngredients(allIngredients)
+                .options(options)
                 .build();
+    }
+
+    @Getter
+    @Builder
+    public static class ProductOptionDto {
+        private Long id;
+        private String optionName; // 옵션명
+        private long price;
     }
 
     @Getter
     @Builder
     public static class IngredientAnalysisDto {
         private String name;
-        private boolean isHarmful; // 법적 규제 (식약처 금지/한도)
-        private boolean isCaution; // [추가] 20가지 주의 성분
-        private boolean isAllergy; // [추가] 알레르기 유발 성분
-        private String division;   // 사유 (예: "배합한도", "20가지 주의성분")
 
-        public static IngredientAnalysisDto of(ProductIngredient ingredient, RestrictedIngredient restrictedInfo) {
+        @JsonProperty("isHarmful")
+        private boolean isHarmful;
+
+        @JsonProperty("isCaution")
+        private boolean isCaution;
+
+        @JsonProperty("isAllergy")
+        private boolean isAllergy;
+
+        private String division;
+        private String effectiveness;
+
+        public static IngredientAnalysisDto of(ProductIngredient ingredient, RestrictedIngredient restrictedInfo, String effectiveness) {
             boolean isRestricted = (restrictedInfo != null);
             String division = isRestricted ? restrictedInfo.getDivision() : null;
 
-            // [핵심 로직] division 텍스트를 분석하여 플래그 설정
-            // DB의 division 컬럼에 "알레르기", "20가지", "주의" 등의 텍스트가 포함되어 있어야 함
             boolean isAllergy = division != null && division.contains("알레르기");
             boolean isCaution = division != null && (division.contains("20가지") || division.contains("주의"));
-
-            // 법적 규제(Harmful)는 "금지"나 "한도"라는 단어가 있을 때만 true (알레르기/단순주의 제외)
             boolean isLegalHarmful = division != null && (division.contains("금지") || division.contains("한도"));
 
             return IngredientAnalysisDto.builder()
                     .name(ingredient.getName())
-                    .isHarmful(isLegalHarmful) // 법적 규제만 Harmful로 취급
-                    .isCaution(isCaution)      // 주의 성분 플래그
-                    .isAllergy(isAllergy)      // 알레르기 플래그
+                    .isHarmful(isLegalHarmful)
+                    .isCaution(isCaution)
+                    .isAllergy(isAllergy)
                     .division(division)
+                    .effectiveness(effectiveness)
                     .build();
         }
     }
