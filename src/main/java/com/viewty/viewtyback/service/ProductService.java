@@ -29,9 +29,19 @@ public class ProductService {
     /**
      * 상품 목록 조회 (중복 제거 및 필터링)
      */
-    public Page<ProductListResponse> getProducts(String name, Long categoryId, Pageable pageable) {
+//    public Page<ProductListResponse> getProducts(String name, Long categoryId, Pageable pageable) {
+//        // [최적화] 서브쿼리를 통한 중복 제거 조회
+//        Page<Product> products = productRepository.findUniqueProducts(name, categoryId, pageable);
+//        return products.map(ProductListResponse::from);
+//    }
+    public Page<ProductListResponse> getProducts(Long categoryId, Pageable pageable) {
         // [최적화] 서브쿼리를 통한 중복 제거 조회
-        Page<Product> products = productRepository.findUniqueProducts(name, categoryId, pageable);
+        Page<Product> products;
+        if(categoryId == null){
+            products = productRepository.findAllProducts(pageable);
+        }else {
+            products = productRepository.findSpecCateProducts(categoryId, pageable);
+        }
         return products.map(ProductListResponse::from);
     }
 

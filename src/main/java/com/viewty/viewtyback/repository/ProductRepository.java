@@ -15,20 +15,64 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Page<Product> findByNameContaining(String name, Pageable pageable);
+//    Page<Product> findByNameContaining(String name, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"categoryId"})
-    @Query("SELECT p FROM Product p " +
-           "WHERE (:name IS NULL OR p.name LIKE %:name%) " +
-           "AND (:categoryId IS NULL OR p.categoryId.id = :categoryId) " +
-           "AND NOT EXISTS (" +
-           "  SELECT 1 FROM Product p2 " +
-           "  WHERE p2.name = p.name " +
-           "  AND (:name IS NULL OR p2.name LIKE %:name%) " +
-           "  AND (:categoryId IS NULL OR p2.categoryId.id = :categoryId) " +
-           "  AND p2.id < p.id" +
-           ")")
-    Page<Product> findUniqueProducts(@Param("name") String name, @Param("categoryId") Long categoryId, Pageable pageable);
+//    @EntityGraph(attributePaths = {"categoryId"})
+//    @Query("SELECT p FROM Product p " +
+//           "WHERE (:name IS NULL OR p.name LIKE %:name%) " +
+//           "AND (:categoryId IS NULL OR p.categoryId.id = :categoryId) " +
+//           "AND NOT EXISTS (" +
+//           "  SELECT 1 FROM Product p2 " +
+//           "  WHERE p2.name = p.name " +
+//           "  AND (:name IS NULL OR p2.name LIKE %:name%) " +
+//           "  AND (:categoryId IS NULL OR p2.categoryId.id = :categoryId) " +
+//           "  AND p2.id < p.id" +
+//           ")")
+//    Page<Product> findUniqueProducts(@Param("name") String name, @Param("categoryId") Long categoryId, Pageable pageable);
+
+    @Query(value = """
+            SELECT DISTINCT * FROM products
+            WHERE id IN (
+                SELECT MAX(id)
+                FROM products
+                GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+            )
+            AND category_id = :categoryId
+            ORDER BY id DESC
+            """,
+            countQuery = """
+                            SELECT DISTINCT count(*) FROM products
+                            WHERE id IN(
+                            SELECT MAX(id)
+                            FROM products
+                            GROUP BY category_id, price, img_url, capacity, country,
+                            cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional,
+                            manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions)
+                            AND category_id =:categoryId
+                            ORDER BY id DESC
+            """,
+            nativeQuery = true)
+    Page<Product> findSpecCateProducts(@Param("categoryId") Long categoryId, Pageable pageable);
+
+    @Query(value = """
+            SELECT DISTINCT * FROM products
+            WHERE id IN (
+                SELECT MAX(id)
+                FROM products
+                GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+            )
+            ORDER BY id DESC
+            """,
+            countQuery = """
+                        SELECT COUNT(*) FROM products
+                        WHERE id IN (
+                            SELECT MAX(id)
+                            FROM products
+                            GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+                        )
+                        """,
+            nativeQuery = true)
+    Page<Product> findAllProducts(Pageable pageable);
 
     List<Product> findByName(String name); // [추가] 동일 이름의 모든 상품(옵션) 조회
 
