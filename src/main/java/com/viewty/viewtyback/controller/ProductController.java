@@ -25,10 +25,11 @@ public class ProductController {
     @GetMapping
     public ApiResponse<Page<ProductListResponse>> getProducts(
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long categoryId,
             // size=10을 기본값으로 설정 (원하는대로 20, 50 등 변경 가능)
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ApiResponse.success(productService.getProducts(name, pageable));
+        return ApiResponse.success(productService.getProducts(name, categoryId, pageable));
     }
 
 //      상품 상세 조회 (성분 분석 포함)
