@@ -18,11 +18,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByNameContaining(String name, Pageable pageable);
 
     @EntityGraph(attributePaths = {"categoryId"})
-    @Query("SELECT p FROM Product p WHERE p.id IN (" +
-           "  SELECT MIN(p2.id) FROM Product p2 " +
-           "  WHERE (:name IS NULL OR p2.name LIKE %:name%) " +
+    @Query("SELECT p FROM Product p " +
+           "WHERE (:name IS NULL OR p.name LIKE %:name%) " +
+           "AND (:categoryId IS NULL OR p.categoryId.id = :categoryId) " +
+           "AND NOT EXISTS (" +
+           "  SELECT 1 FROM Product p2 " +
+           "  WHERE p2.name = p.name " +
+           "  AND (:name IS NULL OR p2.name LIKE %:name%) " +
            "  AND (:categoryId IS NULL OR p2.categoryId.id = :categoryId) " +
-           "  GROUP BY p2.name" +
+           "  AND p2.id < p.id" +
            ")")
     Page<Product> findUniqueProducts(@Param("name") String name, @Param("categoryId") Long categoryId, Pageable pageable);
 
