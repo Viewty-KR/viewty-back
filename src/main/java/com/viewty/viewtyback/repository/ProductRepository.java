@@ -40,4 +40,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             GROUP BY pim.product_id;
             """)
     String getAllProductIngredient(@Param("productId") long productId);
+
+    /**
+     * 상품 ID를 기반으로 전성분, 주의 성분 정보, 그리고 효능(Effectiveness)을 한 번에 조회합니다.
+     * PEG/설페이트와 같은 특수 주의 성분 판별도 쿼리 레벨에서 처리합니다.
+     */
+    @Query("SELECT pi, ri, " +
+           "CASE " +
+           "  WHEN (pi.name LIKE '%피이지%' OR pi.name LIKE '%PEG%' OR pi.engName LIKE '%PEG%' OR pi.engName LIKE '%POLYETHYLENE GLYCOL%') THEN '주의성분(PEG)' " +
+           "  WHEN (pi.name LIKE '%라우릴설페이트%' OR pi.name LIKE '%라우레스설페이트%' OR pi.engName LIKE '%LAURYL SULFATE%' OR pi.engName LIKE '%LAURETH SULFATE%') THEN '주의성분(설페이트)' " +
+           "  ELSE pi.functional " +
+           "END FROM ProductIngredient pi " +
+           "JOIN ProductIngredientMap pim ON pi.id = pim.ingredient.id " +
+           "LEFT JOIN RestrictedIngredient ri ON " +
+           "(pi.casno IS NOT NULL AND ri.casNo IS NOT NULL AND pi.casno = ri.casNo) OR " +
+           "(pi.name = ri.name) OR " +
+           "(pi.engName = ri.engName) " +
+           "WHERE pim.product.id = :productId")
+    List<Object[]> findIngredientsWithAnalysis(@Param("productId") Long productId);
 }

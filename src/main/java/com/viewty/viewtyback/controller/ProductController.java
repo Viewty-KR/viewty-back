@@ -20,7 +20,15 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final com.viewty.viewtyback.repository.ProductCategoryRepository productCategoryRepository;
 
+    /**
+     * 카테고리 전체 목록 조회
+     */
+    @GetMapping("/categories")
+    public ApiResponse<List<com.viewty.viewtyback.entity.ProductCategory>> getCategories() {
+        return ApiResponse.success(productCategoryRepository.findAll());
+    }
 
     @GetMapping
     public ApiResponse<Page<ProductListResponse>> getProducts(
