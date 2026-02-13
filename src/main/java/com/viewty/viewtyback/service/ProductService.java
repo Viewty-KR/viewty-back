@@ -29,7 +29,8 @@ public class ProductService {
     private final RestrictedIngredientRepository restrictedIngredientRepository;
 
     // [캐싱] 7,000여 개의 제한 성분 데이터를 메모리에 캐싱하여 DB 쿼리 폭주 방지
-    private List<RestrictedIngredient> cachedRestrictedIngredients;
+    // AtomicReference를 사용하여 캐시 갱신 중에도 읽기 작업이 중단되지 않도록 개선
+    private final java.util.concurrent.atomic.AtomicReference<List<RestrictedIngredient>> cachedRestrictedIngredients = new java.util.concurrent.atomic.AtomicReference<>();
 
     @PostConstruct
     public void init() {
@@ -37,10 +38,12 @@ public class ProductService {
     }
 
     /**
-     * 캐시 데이터 갱신
+     * 캐시 데이터 갱신 (락 프리 방식)
+     * 새로운 데이터를 모두 불러온 후 한 번에 교체하여 스레드 차단을 방지합니다.
      */
-    public synchronized void refreshCache() {
-        this.cachedRestrictedIngredients = restrictedIngredientRepository.findAll();
+    public void refreshCache() {
+        List<RestrictedIngredient> freshIngredients = restrictedIngredientRepository.findAll();
+        this.cachedRestrictedIngredients.set(freshIngredients);
     }
 
     /**
@@ -72,8 +75,11 @@ public class ProductService {
                 .collect(Collectors.toList());
 
         // 4. [최적화] 캐시된 제한 성분 데이터 사용 (매번 DB 호출 안 함)
-        if (cachedRestrictedIngredients == null) refreshCache();
-        List<RestrictedIngredient> restrictedCandidates = cachedRestrictedIngredients;
+        List<RestrictedIngredient> restrictedCandidates = cachedRestrictedIngredients.get();
+        if (restrictedCandidates == null) {
+            refreshCache();
+            restrictedCandidates = cachedRestrictedIngredients.get();
+        }
 
         // 5. 정밀 매칭 및 DTO 변환
         List<ProductDetailResponse.IngredientAnalysisDto> analyzedIngredients = productIngredients.stream()
@@ -139,14 +145,11 @@ public class ProductService {
         return isPeg || isSulfate;
     }
 
+    /**
+     * 성분의 효능 정보를 조회합니다. (데이터베이스의 functional 컬럼 사용)
+     */
     private String getIngredientEffectiveness(ProductIngredient ing) {
-        String name = (ing.getName() != null) ? ing.getName() : "";
-        if (name.contains("글리세린") || name.contains("부틸렌글라이콜") || name.contains("하이알루로네이트") || name.contains("꿀추출물") || name.contains("솔비톨")) return "피부 보습";
-        if (name.contains("세라마이드") || name.contains("콜레스테롤") || name.contains("스쿠알란") || name.contains("필라그린") || name.contains("레시틴")) return "피부 보호";
-        if (name.contains("병풀") || name.contains("알란토인") || name.contains("판테놀") || name.contains("마데카소사이드") || name.contains("캐모마일") || name.contains("쑥") || name.contains("칼라민")) return "수렴 진정";
-        if (name.contains("나이아신아마이드") || name.contains("비타민C") || name.contains("아스코빅") || name.contains("글루타티온")) return "피부 미백";
-        if (name.contains("아데노신") || name.contains("펩타이드") || name.contains("레티놀") || name.contains("바쿠치올")) return "주름 개선";
-        return null;
+        return ing.getFunctional();
     }
 
     private RestrictedIngredient createVirtualRestrictedIngredient(String division, String name) {
