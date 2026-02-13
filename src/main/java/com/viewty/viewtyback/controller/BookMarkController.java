@@ -24,16 +24,18 @@ public class BookMarkController {
 
     @PostMapping("/toggle")
     public ApiResponse<BookmarkResponse> toggle(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long productId
     ) {
+        Long userId = userDetails.getId();
         return ApiResponse.success(bookMarkService.toggle(userId, productId));
     }
 
     @GetMapping
     public ApiResponse<List<BookmarkResponse>> getMyBookmarks(
-            @RequestParam Long userId
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        Long userId = userDetails.getId();
         return ApiResponse.success(bookMarkService.getMyBookmarks(userId));
     }
 
