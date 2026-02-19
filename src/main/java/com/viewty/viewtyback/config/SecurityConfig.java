@@ -56,6 +56,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:*",
+                "http://10.0.2.2:*",
                 "https://localhost:*",
                 "https://devso.koyeb.app",
                 "https://viewty.duckdns.org",
