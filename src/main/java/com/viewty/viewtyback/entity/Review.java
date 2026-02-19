@@ -19,7 +19,10 @@ public class Review extends BaseTimeEntity{
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column(nullable = false)
     @Size(min = 3, max = 500, message = "리뷰 내용은 3자 이상 500자 이하로 작성해주세요.")
     private String content;
@@ -27,9 +30,9 @@ public class Review extends BaseTimeEntity{
 
 
     @Builder
-    public Review(Product product, String name, String content, int rating) {
+    public Review(Product product, User user, String content, int rating) {
         this.product = product;
-        this.name = name;
+        this.user = user;
         this.content = content;
         this.rating = rating;
     }
