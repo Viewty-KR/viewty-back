@@ -3,6 +3,7 @@ package com.viewty.viewtyback.dto.response;
 import com.viewty.viewtyback.entity.Product;
 import com.viewty.viewtyback.entity.Review;
 import com.viewty.viewtyback.entity.ProductCategory;
+import com.viewty.viewtyback.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,13 +20,14 @@ public class ProductReviewResponse {
     private Long categoryId;
     private String categoryName;
     private String categoryCode;
-    private String name;
+    private String userId;
     private String content;
     private int rating;
     private LocalDateTime createdAt;
 
     public static ProductReviewResponse from(Review review) {
         Product product = review.getProduct();
+        User user = review.getUser();
         ProductCategory category = product == null ? null : product.getCategoryId();
         return ProductReviewResponse.builder()
                 .id(review.getId())
@@ -36,7 +38,7 @@ public class ProductReviewResponse {
                 .categoryId(category == null ? null : category.getId())
                 .categoryName(category == null ? null : category.getName())
                 .categoryCode(category == null ? null : category.getCateCode())
-                .name(review.getName())
+                .userId(user == null ? null : user.getUserId())
                 .content(review.getContent())
                 .rating(review.getRating())
                 .createdAt(review.getCreatedAt())
