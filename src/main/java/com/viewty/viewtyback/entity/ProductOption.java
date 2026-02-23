@@ -1,6 +1,7 @@
 package com.viewty.viewtyback.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "product_options")
 @NoArgsConstructor
+@Getter
 public class ProductOption extends BaseTimeEntity{
 
     @Id
@@ -29,5 +31,8 @@ public class ProductOption extends BaseTimeEntity{
 
     @Column
     private String status;
+
+    @Column(name = "color_code")
+    private String colorCode;
 
 }
