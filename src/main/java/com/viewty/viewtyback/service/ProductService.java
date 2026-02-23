@@ -81,11 +81,25 @@ public class ProductService {
 
         // 5. 옵션 목록 조회 (이름이 같은 상품들)
         List<ProductDetailResponse.ProductOptionDto> options = productRepository.findByName(product.getName()).stream()
-                .map(opt -> ProductDetailResponse.ProductOptionDto.builder()
-                        .id(opt.getId())
-                        .optionName(opt.getCapacity() != null ? opt.getCapacity() : "옵션 " + opt.getId())
-                        .price(opt.getPrice())
-                        .build())
+                .map(optProduct -> {
+                    // optProduct는 Product 엔티티입니다.
+                    // Product에 연결된 ProductOption(옵션 테이블)에서 colorCode를 가져옵니다.
+                    String color = null;
+                    if (optProduct.getOptionId() != null) {
+                        color = optProduct.getOptionId().getColorCode(); // 옵션 테이블에서 컬러 꺼내기
+                    }
+
+                    // null이 아니고 빈 칸이 아닐 때만 AR 지원(true)
+                    boolean isAr = (color != null && !color.trim().isEmpty());
+
+                    return ProductDetailResponse.ProductOptionDto.builder()
+                            .id(optProduct.getId())
+                            .optionName(optProduct.getCapacity() != null ? optProduct.getCapacity() : "옵션 " + optProduct.getId())
+                            .price(optProduct.getPrice())
+                            .colorCode(color)
+                            .isArAvailable(isAr)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         // 6. 최종 응답 생성
