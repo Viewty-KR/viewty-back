@@ -92,9 +92,17 @@ public class ProductService {
                     // null이 아니고 빈 칸이 아닐 때만 AR 지원(true)
                     boolean isAr = (color != null && !color.trim().isEmpty());
 
+                    // [수정] product_options 테이블의 name을 우선 사용하고, 없으면 capacity 사용
+                    String displayName = "옵션 " + optProduct.getId();
+                    if (optProduct.getOptionId() != null && optProduct.getOptionId().getName() != null) {
+                        displayName = optProduct.getOptionId().getName();
+                    } else if (optProduct.getCapacity() != null) {
+                        displayName = optProduct.getCapacity();
+                    }
+
                     return ProductDetailResponse.ProductOptionDto.builder()
                             .id(optProduct.getId())
-                            .optionName(optProduct.getCapacity() != null ? optProduct.getCapacity() : "옵션 " + optProduct.getId())
+                            .optionName(displayName)
                             .price(optProduct.getPrice())
                             .colorCode(color)
                             .isArAvailable(isAr)
