@@ -75,4 +75,5 @@ public class Product extends BaseTimeEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     @Builder.Default
     private List<ProductIngredientMap> ingredientMaps = new ArrayList<>();
+
 }

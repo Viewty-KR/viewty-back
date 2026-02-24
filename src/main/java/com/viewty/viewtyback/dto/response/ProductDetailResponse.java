@@ -103,6 +103,8 @@ public class ProductDetailResponse {
         private Long id;
         private String optionName; // 옵션명
         private long price;
+        private String colorCode;
+        private boolean isArAvailable;
     }
 
     @Getter
