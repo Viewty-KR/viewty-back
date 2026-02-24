@@ -60,7 +60,8 @@ public class SecurityConfig {
                 "https://localhost:*",
                 "https://devso.koyeb.app",
                 "https://viewty.duckdns.org",
-                "https://viewty.duckdns.org:*"
+                "https://viewty.duckdns.org:*",
+                "http://43.201.0.7:*"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
