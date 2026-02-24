@@ -93,13 +93,10 @@ public class ProductService {
                     boolean isAr = (color != null && !color.trim().isEmpty());
 
                     // [수정] product_options 테이블의 name을 우선 사용하고, 없으면 capacity 사용
-                    String displayName = "옵션 " + optProduct.getId();
+                    String displayName = "";
                     if (optProduct.getOptionId() != null && optProduct.getOptionId().getName() != null) {
-                        displayName = optProduct.getOptionId().getName();
-                    } else if (optProduct.getCapacity() != null) {
-                        displayName = optProduct.getCapacity();
+                    displayName = optProduct.getOptionId().getName();
                     }
-
                     return ProductDetailResponse.ProductOptionDto.builder()
                             .id(optProduct.getId())
                             .optionName(displayName)
