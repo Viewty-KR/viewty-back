@@ -104,6 +104,7 @@ public class ProductDetailResponse {
         private String optionName; // 옵션명
         private long price;
         private String colorCode;
+        @JsonProperty("isArAvailable")
         private boolean isArAvailable;
     }
 
