@@ -1,6 +1,8 @@
 package com.viewty.viewtyback.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.viewty.viewtyback.entity.Product;
+import com.viewty.viewtyback.entity.ProductOption;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,6 +10,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.util.Optional;
 
 @Getter
 @Builder
@@ -18,6 +21,7 @@ public class ProductListResponse {
     private String imgUrl;
     private String manufacturer;
     private String categoryName;
+    private boolean isArAvailable;
 
     public static ProductListResponse from(Product product) {
         String safeImgUrl = product.getImgUrl();
@@ -67,6 +71,9 @@ public class ProductListResponse {
                 .imgUrl(safeImgUrl)
                 .manufacturer(product.getManufacturer())
                 .categoryName(product.getCategoryId() != null ? product.getCategoryId().getName() : null)
+                .isArAvailable(Optional.ofNullable(product.getOptionId())
+                                .map(ProductOption::getColorCode)
+                                .isPresent())
                 .build();
     }
 }

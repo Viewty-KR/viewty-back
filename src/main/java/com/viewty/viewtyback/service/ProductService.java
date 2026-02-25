@@ -42,7 +42,7 @@ public class ProductService {
         }else {
             products = productRepository.findSpecCateProducts(categoryId, pageable);
         }
-        return products.map(ProductListResponse::from);
+        return products.map(product -> ProductListResponse.from(product));
     }
 
     /**
