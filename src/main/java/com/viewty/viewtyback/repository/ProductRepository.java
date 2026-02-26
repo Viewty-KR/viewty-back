@@ -102,4 +102,82 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "(pi.engName = ri.engName) " +
            "WHERE pim.product.id = :productId")
     List<Object[]> findIngredientsWithAnalysis(@Param("productId") Long productId);
+
+    /**
+     * specifications 필드에서 키워드를 포함하는 제품 조회 (중복 제거)
+     * 사용자 설문 정보 기반 제품 추천에 사용
+     */
+    @Query(value = """
+            SELECT p.* FROM (
+                SELECT DISTINCT *,
+                    CASE
+                        WHEN specifications LIKE CONCAT('%', :keyword, '%') THEN 1
+                        WHEN name LIKE CONCAT('%', :keyword, '%') THEN 2
+                        ELSE 3
+                    END as priority
+                FROM products
+                WHERE id IN (
+                    SELECT MAX(id)
+                    FROM products
+                    GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+                )
+                AND (specifications LIKE CONCAT('%', :keyword, '%')
+                     OR name LIKE CONCAT('%', :keyword, '%')
+                     OR prod_ingredients LIKE CONCAT('%', :keyword, '%'))
+            ) p
+            ORDER BY p.priority, p.id DESC
+            """,
+            countQuery = """
+                        SELECT COUNT(*) FROM products
+                        WHERE id IN (
+                            SELECT MAX(id)
+                            FROM products
+                            GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+                        )
+                        AND (specifications LIKE CONCAT('%', :keyword, '%')
+                             OR name LIKE CONCAT('%', :keyword, '%')
+                             OR prod_ingredients LIKE CONCAT('%', :keyword, '%'))
+                        """,
+            nativeQuery = true)
+    Page<Product> findBySpecificationsContaining(@Param("keyword") String keyword, Pageable pageable);
+
+    /**
+     * 다중 키워드 기반 제품 검색 (OR 조건)
+     * 키워드는 "|"로 구분됨 (예: "보습|수분|영양")
+     * specifications, name, prod_ingredients 필드에서 검색
+     */
+    @Query(value = """
+            SELECT p.* FROM (
+                SELECT DISTINCT *,
+                    CASE
+                        WHEN specifications REGEXP :keywords THEN 1
+                        WHEN name REGEXP :keywords THEN 2
+                        WHEN prod_ingredients REGEXP :keywords THEN 3
+                        ELSE 4
+                    END as priority
+                FROM products
+                WHERE id IN (
+                    SELECT MAX(id)
+                    FROM products
+                    GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+                )
+                AND (specifications REGEXP :keywords
+                     OR name REGEXP :keywords
+                     OR prod_ingredients REGEXP :keywords)
+            ) p
+            ORDER BY p.priority, p.id DESC
+            """,
+            countQuery = """
+                        SELECT COUNT(*) FROM products
+                        WHERE id IN (
+                            SELECT MAX(id)
+                            FROM products
+                            GROUP BY category_id, price, img_url, capacity, country, cs_number, delivery_fee, delivery_jeju_fee, expiry_date, is_functional, manufacturer, name, prod_ingredients, qa, specifications, usage_method, precautions
+                        )
+                        AND (specifications REGEXP :keywords
+                             OR name REGEXP :keywords
+                             OR prod_ingredients REGEXP :keywords)
+                        """,
+            nativeQuery = true)
+    Page<Product> findByMultipleKeywords(@Param("keywords") String keywords, Pageable pageable);
 }

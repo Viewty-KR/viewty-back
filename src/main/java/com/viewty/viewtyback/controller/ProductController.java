@@ -3,12 +3,14 @@ package com.viewty.viewtyback.controller;
 import com.viewty.viewtyback.dto.response.ApiResponse;
 import com.viewty.viewtyback.dto.response.ProductDetailResponse;
 import com.viewty.viewtyback.dto.response.ProductListResponse;
+import com.viewty.viewtyback.security.CustomUserDetails;
 import com.viewty.viewtyback.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +41,23 @@ public class ProductController {
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ApiResponse.success(productService.getProducts(categoryId, pageable));
+    }
+
+    /**
+     * 사용자 설문 정보 기반 제품 추천
+     * keyword가 있으면 설문 정보 대신 키워드로만 검색
+     */
+    @GetMapping("/recommend")
+    public ApiResponse<Page<ProductListResponse>> getRecommendedProducts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Long userId = null;
+        if (userDetails != null) {
+            userId = userDetails.getId();
+        }
+        return ApiResponse.success(productService.getRecommendedProducts(userId, keyword, pageable));
     }
 
 //      상품 상세 조회 (성분 분석 포함)
