@@ -216,4 +216,37 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         """,
             nativeQuery = true)
     Page<Product> findByMultipleKeywords(@Param("keywords") String keywords, Pageable pageable);
+
+    // AR 체험 가능한 제품 조회
+    @Query(value = """
+            SELECT DISTINCT p.* FROM products p
+            JOIN product_options po ON p.option_id = po.id
+            WHERE po.color_code IS NOT NULL
+            AND po.color_code != ''
+            AND p.id IN (
+                SELECT MAX(id)
+                FROM products
+                GROUP BY category_id, price, img_url, capacity, country, cs_number, 
+                         delivery_fee, delivery_jeju_fee, expiry_date, is_functional, 
+                         manufacturer, name, prod_ingredients, qa, specifications, 
+                         usage_method, precautions
+            )
+            ORDER BY p.id DESC
+            """,
+            countQuery = """
+                        SELECT COUNT(DISTINCT p.id) FROM products p
+                        JOIN product_options po ON p.option_id = po.id
+                        WHERE po.color_code IS NOT NULL
+                        AND po.color_code != ''
+                        AND p.id IN (
+                            SELECT MAX(id)
+                            FROM products
+                            GROUP BY category_id, price, img_url, capacity, country, cs_number, 
+                                     delivery_fee, delivery_jeju_fee, expiry_date, is_functional, 
+                                     manufacturer, name, prod_ingredients, qa, specifications, 
+                                     usage_method, precautions
+                        )
+                        """,
+            nativeQuery = true)
+    Page<Product> findArAvailableProducts(Pageable pageable);
 }

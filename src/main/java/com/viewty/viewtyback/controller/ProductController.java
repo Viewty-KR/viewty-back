@@ -76,4 +76,14 @@ public class ProductController {
         return ApiResponse.success(response);
     }
 
+    // AR 체험 가능한 제품 조회
+    @GetMapping("/ar-products")
+    public ApiResponse<Page<ProductListResponse>> getArProducts(
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        System.out.println("AT");
+        return ApiResponse.success(productService.getArAvailableProducts(pageable));
+
+    }
+
 }
