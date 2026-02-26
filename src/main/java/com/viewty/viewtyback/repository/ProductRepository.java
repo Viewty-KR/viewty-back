@@ -85,6 +85,42 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             """)
     String getAllProductIngredient(@Param("productId") long productId);
 
+    @Query(value = """
+            SELECT p.* FROM products p
+            WHERE p.id IN (
+                SELECT MAX(p2.id)
+                FROM products p2
+                JOIN (
+                    SELECT product_id FROM (
+                        SELECT pim.product_id, pi.functional, COUNT(*) as func_count,
+                               ROW_NUMBER() OVER (PARTITION BY pim.product_id ORDER BY COUNT(*) DESC, pi.functional ASC) as rn
+                        FROM product_ingredient_map pim
+                        JOIN product_ingredient pi ON pim.ingredient_id = pi.id
+                        WHERE pi.functional IS NOT NULL
+                        GROUP BY pim.product_id, pi.functional
+                    ) t WHERE rn = 1 AND functional = :functionalType
+                ) dp ON p2.id = dp.product_id
+                GROUP BY p2.name  -- 💡 17개 컬럼 대신 '이름(name)'으로만 중복 제거!
+            )
+            ORDER BY p.id DESC
+            """,
+            countQuery = """
+                        SELECT COUNT(DISTINCT p2.name)
+                        FROM products p2
+                        JOIN (
+                            SELECT product_id FROM (
+                                SELECT pim.product_id, pi.functional,
+                                       ROW_NUMBER() OVER (PARTITION BY pim.product_id ORDER BY COUNT(*) DESC, pi.functional ASC) as rn
+                                FROM product_ingredient_map pim
+                                JOIN product_ingredient pi ON pim.ingredient_id = pi.id
+                                WHERE pi.functional IS NOT NULL
+                                GROUP BY pim.product_id, pi.functional
+                            ) t WHERE rn = 1 AND functional = :functionalType
+                        ) dp ON p2.id = dp.product_id
+                        """,
+            nativeQuery = true)
+    Page<Product> findByFunctionalType(@Param("functionalType") String functionalType, Pageable pageable);
+
     /**
      * 상품 ID를 기반으로 전성분, 주의 성분 정보, 그리고 효능(Effectiveness)을 한 번에 조회합니다.
      * PEG/설페이트와 같은 특수 주의 성분 판별도 쿼리 레벨에서 처리합니다.

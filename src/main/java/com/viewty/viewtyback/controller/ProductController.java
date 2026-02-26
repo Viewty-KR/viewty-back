@@ -60,6 +60,15 @@ public class ProductController {
         return ApiResponse.success(productService.getRecommendedProducts(userId, keyword, pageable));
     }
 
+//  효능별 상품 조회
+    @GetMapping("/functional")
+    public ApiResponse<Page<ProductListResponse>> getFunctionalProducts(
+            @RequestParam String type,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ApiResponse.success(productService.getProductsByFunctionalType(type, pageable));
+    }
+
 //      상품 상세 조회 (성분 분석 포함)
     @GetMapping("/{id}")
     public ApiResponse<ProductDetailResponse> getProductDetail(@PathVariable Long id) {
