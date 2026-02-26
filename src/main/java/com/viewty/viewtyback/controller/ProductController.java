@@ -83,6 +83,7 @@ public class ProductController {
     ) {
         System.out.println("AT");
         return ApiResponse.success(productService.getArAvailableProducts(pageable));
+
     }
 
 }
