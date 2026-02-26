@@ -261,4 +261,10 @@ public class ProductService {
             default -> List.of();
         };
     }
+
+    // AR 체험 가능한 제품 목록 조회
+    public Page<ProductListResponse> getArAvailableProducts(Pageable pageable) {
+        Page<Product> products = productRepository.findArAvailableProducts(pageable);
+        return products.map(ProductListResponse::from);
+    }
 }
