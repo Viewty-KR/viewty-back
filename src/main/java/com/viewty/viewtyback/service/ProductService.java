@@ -12,6 +12,7 @@ import com.viewty.viewtyback.repository.ProductRepository;
 import com.viewty.viewtyback.repository.RestrictedIngredientRepository;
 import com.viewty.viewtyback.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,15 @@ public class ProductService {
             products = productRepository.findSpecCateProducts(categoryId, pageable);
         }
         return products.map(product -> ProductListResponse.from(product));
+    }
+
+    /**
+     * 특정 효능(주름개선, 수렴진정 등)을 가진 성분이 포함된 상품 목록 조회
+     */
+    @Cacheable(value = "functionalProducts", key = "#functionalType + '_' + #pageable.pageNumber")
+    public Page<ProductListResponse> getProductsByFunctionalType(String functionalType, Pageable pageable) {
+        Page<Product> products = productRepository.findByFunctionalType(functionalType, pageable);
+        return products.map(ProductListResponse::from);
     }
 
     /**
